@@ -2,6 +2,10 @@
 
 Bygget etter *Den første tonen – prototypedesign v0.2* og *Fagravik – prototypekart v0.1*.
 
+## Format
+
+Intern oppløsning 640×360, skalert med heltall til vinduet (1920×1080 som standard), slik Laiksern valgte i stilguiden. Kartet er tegnet i større enheter og zoomes ned, så Ingrid blir omtrent 64 piksler høy.
+
 ## Hva som er med
 
 **Prolog (våren 1054).** Huset i grenda og hovet ved elva. Mor synger vuggevisen, venninnen vil bytte kappe (spilleren ser fargene bytte plass, ingen sier hvem som er hvem), kroken i hovet er tom, og en kvinne med lykt roper noe uhørbart fra andre siden av elva. Vannet kommer, og spillet klipper til «Fagravik, høsten 1082».
@@ -57,5 +61,5 @@ Sluttskjermen spør «Hva tror du klokkelyden betydde?». Resten av spørsmålen
 
 1. Blind spilltest med 3–5 personer.
 2. Revidere tempo, navigasjon og hvor mye spilleren må finne selv.
-3. Bytte til målformatet fra stilguiden (640×360 og omtrent 64 piksler høye figurer). Gråboksen kjører i 1280×720, så verdenen kan skaleres til halvparten når pikselkunsten kommer.
+3. Erstatte rektanglene med pikselkunst etter stilguiden. Prototypen kjører allerede i den interne oppløsningen 640×360 med heltallsskalering (3× til 1080p), og kameraet er zoomet slik at Ingrid er omtrent 64 piksler høy.
 4. Engelsk tekst via Godots oversettelsesfiler.

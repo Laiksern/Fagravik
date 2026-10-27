@@ -11,7 +11,13 @@ const World := preload("res://data/world.gd")
 
 const FLOOR_Y := 600.0
 const SPEED := 340.0
-const VIEW := Vector2(1280, 720)
+## Intern oppløsning fra stilguiden: 640×360, skalert med heltall (3× til 1080p).
+const VIEW := Vector2(640, 360)
+## Gråboksverdenen er tegnet i større enheter; zoomen gjør Ingrid omtrent 64 px høy.
+const ZOOM := 0.653
+const WORLD_VIEW := VIEW / ZOOM
+## Hvor gulvet ligger på skjermen (piksler fra toppen).
+const FLOOR_ON_SCREEN := 312.0
 const REACH := 24.0
 const HUM_RANGE := 460.0
 const NIGHT_BELL_DELAY := 7.0
@@ -91,6 +97,7 @@ func _ready() -> void:
 	font = ThemeDB.fallback_font
 	cam = Camera2D.new()
 	add_child(cam)
+	cam.zoom = Vector2(ZOOM, ZOOM)
 	cam.make_current()
 	tint = CanvasModulate.new()
 	add_child(tint)
@@ -105,58 +112,58 @@ func _build_ui() -> void:
 	var ui := CanvasLayer.new()
 	add_child(ui)
 
-	place_lbl = _label(26, Color(1, 1, 1, 0.9))
-	place_lbl.position = Vector2(32, 24)
+	place_lbl = _label(13, Color(1, 1, 1, 0.9))
+	place_lbl.position = Vector2(16, 10)
 	place_lbl.modulate.a = 0.0
 	ui.add_child(place_lbl)
 
-	held_lbl = _label(18, Color(1, 0.95, 0.8))
-	held_lbl.position = Vector2(860, 24)
-	held_lbl.size = Vector2(390, 30)
+	held_lbl = _label(10, Color(1, 0.95, 0.8))
+	held_lbl.position = Vector2(430, 10)
+	held_lbl.size = Vector2(195, 16)
 	held_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	ui.add_child(held_lbl)
 
-	box = _panel(Vector2(80, 500), Vector2(1120, 196))
+	box = _panel(Vector2(30, 258), Vector2(580, 96))
 	ui.add_child(box)
 	var vb := VBoxContainer.new()
-	vb.add_theme_constant_override("separation", 6)
+	vb.add_theme_constant_override("separation", 3)
 	box.add_child(vb)
-	speaker_lbl = _label(20, Color(1, 0.85, 0.55))
+	speaker_lbl = _label(11, Color(1, 0.85, 0.55))
 	vb.add_child(speaker_lbl)
-	text_lbl = _label(22, Color(0.95, 0.95, 0.92))
+	text_lbl = _label(12, Color(0.95, 0.95, 0.92))
 	text_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	text_lbl.custom_minimum_size = Vector2(1080, 0)
+	text_lbl.custom_minimum_size = Vector2(556, 0)
 	vb.add_child(text_lbl)
 	choice_box = VBoxContainer.new()
 	vb.add_child(choice_box)
 	box.hide()
 
-	inv_panel = _panel(Vector2(340, 140), Vector2(600, 380))
+	inv_panel = _panel(Vector2(170, 70), Vector2(300, 190))
 	ui.add_child(inv_panel)
 	var ivb := VBoxContainer.new()
-	ivb.add_theme_constant_override("separation", 8)
+	ivb.add_theme_constant_override("separation", 4)
 	inv_panel.add_child(ivb)
-	ivb.add_child(_label(24, Color(1, 0.85, 0.55), "Det Ingrid bærer"))
+	ivb.add_child(_label(13, Color(1, 0.85, 0.55), "Det Ingrid bærer"))
 	inv_list = VBoxContainer.new()
 	ivb.add_child(inv_list)
-	inv_desc = _label(18, Color(0.85, 0.85, 0.8))
+	inv_desc = _label(10, Color(0.85, 0.85, 0.8))
 	inv_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	inv_desc.custom_minimum_size = Vector2(560, 0)
+	inv_desc.custom_minimum_size = Vector2(276, 0)
 	ivb.add_child(inv_desc)
-	ivb.add_child(_label(15, Color(0.6, 0.6, 0.6), "Enter: ta i hånden   ·   Esc: lukk"))
+	ivb.add_child(_label(9, Color(0.6, 0.6, 0.6), "Enter: ta i hånden   ·   Esc: lukk"))
 	inv_panel.hide()
 
-	note_panel = _panel(Vector2(200, 60), Vector2(880, 600))
+	note_panel = _panel(Vector2(100, 30), Vector2(440, 300))
 	ui.add_child(note_panel)
 	var nvb := VBoxContainer.new()
 	note_panel.add_child(nvb)
-	nvb.add_child(_label(24, Color(1, 0.85, 0.55), "Notatbok"))
+	nvb.add_child(_label(13, Color(1, 0.85, 0.55), "Notatbok"))
 	note_edit = TextEdit.new()
-	note_edit.custom_minimum_size = Vector2(840, 500)
-	note_edit.add_theme_font_size_override("font_size", 20)
+	note_edit.custom_minimum_size = Vector2(416, 240)
+	note_edit.add_theme_font_size_override("font_size", 11)
 	note_edit.wrap_mode = TextEdit.LINE_WRAPPING_BOUNDARY
 	nvb.add_child(note_edit)
-	nvb.add_child(_label(15, Color(0.6, 0.6, 0.6), "Esc: lukk"))
+	nvb.add_child(_label(9, Color(0.6, 0.6, 0.6), "Esc: lukk"))
 	note_panel.hide()
 
 	fade = ColorRect.new()
@@ -165,7 +172,7 @@ func _build_ui() -> void:
 	fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	ui.add_child(fade)
 
-	center_lbl = _label(26, Color(0.95, 0.93, 0.88))
+	center_lbl = _label(12, Color(0.95, 0.93, 0.88))
 	center_lbl.size = VIEW
 	center_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	center_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -188,8 +195,8 @@ func _panel(pos: Vector2, size: Vector2) -> PanelContainer:
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0.07, 0.07, 0.09, 0.92)
 	sb.border_color = Color(0.5, 0.42, 0.3)
-	sb.set_border_width_all(2)
-	sb.set_content_margin_all(18)
+	sb.set_border_width_all(1)
+	sb.set_content_margin_all(10)
 	p.add_theme_stylebox_override("panel", sb)
 	return p
 
@@ -380,12 +387,12 @@ func _update_focus() -> void:
 func _update_camera(delta: float) -> void:
 	var w: float = room.w
 	var cx: float
-	if w <= VIEW.x:
+	if w <= WORLD_VIEW.x:
 		cx = w / 2.0
 	else:
-		cx = clampf(player_x, VIEW.x / 2.0, w - VIEW.x / 2.0)
+		cx = clampf(player_x, WORLD_VIEW.x / 2.0, w - WORLD_VIEW.x / 2.0)
 	shake = maxf(shake - delta * 2.0, 0.0)
-	cam.position = Vector2(cx, VIEW.y / 2.0) + Vector2(randf_range(-1, 1), randf_range(-1, 1)) * shake * 10.0
+	cam.position = Vector2(cx, FLOOR_Y - (FLOOR_ON_SCREEN - VIEW.y / 2.0) / ZOOM) + Vector2(randf_range(-1, 1), randf_range(-1, 1)) * shake * 10.0
 
 
 # ================================================================ INNDATA
@@ -550,7 +557,7 @@ func _draw_inventory() -> void:
 	for i in State.inventory.size():
 		var it: Dictionary = items[State.inventory[i]]
 		var mark := "▸ " if i == inv_sel else "   "
-		inv_list.add_child(_label(22, Color(1, 1, 1) if i == inv_sel else Color(0.7, 0.7, 0.7), mark + it.name))
+		inv_list.add_child(_label(11, Color(1, 1, 1) if i == inv_sel else Color(0.7, 0.7, 0.7), mark + it.name))
 	inv_desc.text = items[State.inventory[inv_sel]].desc
 
 
@@ -701,7 +708,7 @@ func _render_choices() -> void:
 		c.queue_free()
 	for i in dlg_choices.size():
 		var sel := i == dlg_sel
-		choice_box.add_child(_label(22, Color(1, 0.9, 0.6) if sel else Color(0.7, 0.7, 0.7), ("▸ " if sel else "   ") + dlg_choices[i].t))
+		choice_box.add_child(_label(12, Color(1, 0.9, 0.6) if sel else Color(0.7, 0.7, 0.7), ("▸ " if sel else "   ") + dlg_choices[i].t))
 
 
 func _dialogue_key(k: int) -> void:
@@ -939,10 +946,11 @@ func _draw_rain(window_only: bool) -> void:
 			var y := wr.position.y + fmod(i * 53.0 + t * 400.0, wr.size.y - 14.0)
 			draw_line(Vector2(x, y), Vector2(x - 3, y + 12), c, 1.5)
 		return
-	var cx := cam.position.x - VIEW.x / 2.0
+	var cx := cam.position.x - WORLD_VIEW.x / 2.0
+	var cy := cam.position.y - WORLD_VIEW.y / 2.0
 	for i in 120:
-		var x := cx + fmod(i * 97.0 + t * 60.0, VIEW.x + 40.0) - 20.0
-		var y := fmod(i * 61.0 + t * 700.0, VIEW.y)
+		var x := cx + fmod(i * 97.0 + t * 60.0, WORLD_VIEW.x + 40.0) - 20.0
+		var y := cy + fmod(i * 61.0 + t * 700.0, WORLD_VIEW.y)
 		draw_line(Vector2(x, y), Vector2(x - 6, y + 22), c, 1.5)
 
 
