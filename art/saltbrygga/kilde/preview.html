@@ -1,0 +1,107 @@
+<title>Saltbrygga</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Literata:opsz,wght@7..72,400;7..72,600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: ett stort spillvindu med kamera man kan dra, og et lite arbeidsark under */
+:root{--bg:#eef1ee;--paper:#f8faf7;--ink:#18252f;--muted:#56646c;--line:#c9d2cf;--bronze:#9a6a22;
+  --display:"Pixelify Sans","Courier New",monospace;--body:"Literata",Georgia,serif;--mono:"IBM Plex Mono",ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1520;--paper:#131e2b;--ink:#dfe6e4;--muted:#93a2a8;--line:#273546;--bronze:#d9a04a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0d1520;--paper:#131e2b;--ink:#dfe6e4;--muted:#93a2a8;--line:#273546;--bronze:#d9a04a;color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 56px}
+.wrap{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+header{padding-block:36px 0;display:flex;flex-direction:column;gap:10px}
+h1{font-family:var(--display);font-size:clamp(2rem,6vw,3.4rem);line-height:1.1;margin:0}
+h2{font-family:var(--display);font-weight:500;font-size:1.3rem;margin:0}
+p{margin:0}.col{max-width:66ch}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.frame{border:3px solid var(--ink);background:#000;line-height:0;touch-action:none;cursor:grab}
+.frame:active{cursor:grabbing}
+canvas{width:100%;height:auto;display:block;max-width:100%;image-rendering:pixelated;image-rendering:crisp-edges}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font-family:var(--display);font-size:1rem;background:var(--paper);color:var(--ink);border:2px solid var(--ink);padding:6px 14px;cursor:pointer;box-shadow:3px 3px 0 var(--ink)}
+.btn[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.btn:focus-visible{outline:3px solid var(--bronze);outline-offset:3px}
+input[type=range]{flex:1 1 200px;min-width:0;accent-color:var(--bronze)}
+.muted{color:var(--muted);font-size:.95rem}
+.strip{display:flex;flex-direction:column;gap:8px}
+.strip .frame{cursor:default}
+.tablewrap{overflow-x:auto;border:2px solid var(--ink);background:var(--paper)}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.93rem}
+th,td{text-align:left;padding:8px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:500}
+tr:last-child td{border-bottom:0}
+td:first-child{font-family:var(--display);font-weight:500}
+ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+</style>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Fagravik · Saltbrygga · bakgrunn v0.1 · 27. oktober 2026</span>
+    <h1>Saltbrygga</h1>
+    <p class="col">Rom S1 i prototypen, tegnet i spillets oppløsning (640 × 360) med fem parallakselag og fem lyssettinger. Dra i bildet eller bruk glidebryteren for å gå langs brygga. Gulvlinjen ligger på y = 312, som i prototypen, så Ingrid kan slippes rett inn.</p>
+  </header>
+  <div class="controls" role="group" aria-label="Lyssetting">
+    <button class="btn" data-phase="morgen" aria-pressed="false">Morgen</button>
+    <button class="btn" data-phase="dag" aria-pressed="false">Formiddag</button>
+    <button class="btn" data-phase="ettermiddag" aria-pressed="false">Ettermiddag</button>
+    <button class="btn" data-phase="kveld" aria-pressed="true">Kveld</button>
+    <button class="btn" data-phase="natt" aria-pressed="false">Natt</button>
+  </div>
+  <div class="frame" id="frame"><canvas id="view" width="640" height="360" aria-label="Saltbrygga sett fra fjorden, med kamera som kan flyttes langs brygga"></canvas></div>
+  <div class="controls"><label for="cam" class="muted">Kamera</label><input id="cam" type="range" min="0" max="928" value="520"><span class="muted" id="pos">x 520–1160</span></div>
+
+  <div class="strip">
+    <h2>Hele rommet, hovedlaget</h2>
+    <div class="frame"><canvas id="full" width="1568" height="360" aria-label="Hele hovedlaget til Saltbrygga, 1568 piksler bredt"></canvas></div>
+    <p class="muted col">Fra venstre: trappa opp mot Torget, de tilspikrede plankene over den gamle gangen under brua, kloppen over elvemunningen, tauverket, de to sjøbodene på påler, fiskeboden, fiskehjellen, vertshuset med klokkeskiltet og døra, og trappa ned til vannet der Toras båt står om natta. Den ene planken ved x 1460 er litt lysere enn de andre.</p>
+  </div>
+
+  <div class="strip">
+    <h2>Lagene</h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Lag</th><th>Bredde</th><th>Parallakse</th><th>Innhold</th></tr></thead>
+      <tbody>
+        <tr><td>himmel</td><td>640 px</td><td>0 (står stille)</td><td>Himmelgradient, sol eller måne, stjerner, tynne skyer</td></tr>
+        <tr><td>fjell</td><td>900 px</td><td>0,25</td><td>Fjerne fjell med snø og dis, fjordvegg med granskog</td></tr>
+        <tr><td>bakken</td><td>1140 px</td><td>0,55</td><td>Kirkebakken med stavkirken og spiret, Storbrua over elva, bjørker, takene i Kaupgata</td></tr>
+        <tr><td>brygga</td><td>1568 px</td><td>1</td><td>Alt Ingrid går forbi: bygninger, dekke, påler, vann, rekvisitter. Gulv på y 312</td></tr>
+        <tr><td>forgrunn</td><td>1720 px</td><td>1,2</td><td>Robåt, fortøyningspåler, nett til tørk. Gjennomsiktig ellers</td></tr>
+      </tbody>
+    </table></div>
+    <ul class="col">
+      <li>Pikselbredden på hovedlaget svarer til romkartet: 2400 verdensenheter × 0,653 = 1568 px. Døra til vertshuset står på x 1143 (verden 1750), sjøbodene rundt 686, fiskeboden rundt 882, kloppen over elvemunningen rundt 307 og plankene rundt 170.</li>
+      <li>Lysene i vinduene og lyktene er tegnet inn i kvelds- og nattlagene. Når prototypen får ekte 2D-lys i Godot, kan de byttes ut med lyskilder på samme punkter.</li>
+      <li>Dette er bakgrunnen alene. Mennesker, Toras båt, røyk fra ljoren og vannmerket som stiger tegnes av spillet oppå.</li>
+    </ul>
+  </div>
+</div>
+<script src="gen.js"></script>
+<script>
+(() => {
+  const G = window.Saltbrygga, view = document.getElementById('view'), ctx = view.getContext('2d');
+  const full = document.getElementById('full'), fctx = full.getContext('2d');
+  const cam = document.getElementById('cam'), pos = document.getElementById('pos');
+  let phase = 'kveld', layers = {};
+  function build() { layers = {}; G.LAYERS.forEach(L => { layers[L.id] = G.make(L.id, phase); }); fctx.clearRect(0, 0, 1568, 360); fctx.drawImage(layers.brygga, 0, 0); }
+  function render() {
+    const x = +cam.value; pos.textContent = 'x ' + x + '–' + (x + 640);
+    ctx.clearRect(0, 0, 640, 360);
+    G.LAYERS.forEach(L => { const off = Math.round(x * L.par); const maxOff = Math.max(0, L.w - 640); ctx.drawImage(layers[L.id], -Math.min(off, maxOff), 0); });
+    // 64 px høy referansefigur (Ingrid) midt i bildet, bare som målestokk
+    const ix = 320, b = 312;
+    ctx.fillStyle = '#2a3a6a'; ctx.fillRect(ix - 7, b - 40, 15, 28); ctx.fillStyle = '#4a3020'; ctx.fillRect(ix - 6, b - 12, 5, 12); ctx.fillRect(ix + 2, b - 12, 5, 12);
+    ctx.fillStyle = '#e8b890'; ctx.fillRect(ix - 5, b - 58, 11, 15); ctx.fillStyle = '#5a3a22'; ctx.fillRect(ix - 6, b - 62, 13, 6); ctx.fillRect(ix + 5, b - 58, 3, 18);
+    ctx.fillStyle = '#8a6a48'; ctx.fillRect(ix - 4, b - 34, 9, 18);
+  }
+  function setPhase(ph) { phase = ph; document.querySelectorAll('[data-phase]').forEach(b => b.setAttribute('aria-pressed', b.dataset.phase === ph)); build(); render(); }
+  document.querySelectorAll('[data-phase]').forEach(b => b.addEventListener('click', () => setPhase(b.dataset.phase)));
+  cam.addEventListener('input', render);
+  let drag = null;
+  const frame = document.getElementById('frame');
+  frame.addEventListener('pointerdown', e => { drag = { x: e.clientX, v: +cam.value }; frame.setPointerCapture(e.pointerId); });
+  frame.addEventListener('pointermove', e => { if (!drag) return; const scale = 640 / frame.clientWidth; cam.value = Math.max(0, Math.min(928, Math.round(drag.v - (e.clientX - drag.x) * scale))); render(); });
+  frame.addEventListener('pointerup', () => drag = null); frame.addEventListener('pointercancel', () => drag = null);
+  window.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') { cam.value = +cam.value - 16; render(); } if (e.key === 'ArrowRight') { cam.value = +cam.value + 16; render(); } });
+  setPhase('kveld');
+  window.__saltbrygga = { setPhase, layers: () => layers, G };
+})();
+</script>
